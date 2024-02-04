@@ -1,16 +1,13 @@
 #include <stdio.h>
 #include <stdbool.h>
-#include "arg_parser/arg_parser.h"
+#include "cache/config.h"
 
 int main(int argc, char const *argv[])
 {
-    int nsets, bsize, assoc;
-    char r_policy;
-    bool output_flag;
 
-    parse(argv, &nsets, &bsize, &assoc, &r_policy, &output_flag);
+    Config *config = parse_arguments(argv);
 
-    printf("%d %d %d %c %d\n\n", nsets, bsize, assoc, r_policy, output_flag);
+    printf("%d %d %d %c\n\n", config->nsets, config->bsize, config->assoc, config->r_policy);
 
     return 0;
 }

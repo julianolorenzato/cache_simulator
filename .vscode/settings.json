@@ -1,5 +1,7 @@
 {
     "files.associations": {
-        "arg_parser.h": "c"
+        "arg_parser.h": "c",
+        "config.h": "c",
+        "cache.h": "c"
     }
 }
