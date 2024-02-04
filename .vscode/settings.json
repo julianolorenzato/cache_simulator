@@ -2,6 +2,7 @@
     "files.associations": {
         "arg_parser.h": "c",
         "config.h": "c",
-        "cache.h": "c"
+        "cache.h": "c",
+        "stdbool.h": "c"
     }
 }

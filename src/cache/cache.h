@@ -3,30 +3,18 @@
 
 #include "config.h"
 #include <stdbool.h>
+#include <stdint.h>
 
 #define ADDRESS_LENGTH 32
-
-typedef signed char Byte;
-
-typedef Byte *Block;
-
-typedef Byte *Tag;
-
-typedef struct
-{
-    bool validation;
-    Tag tag;
-    Block block;
-} Line;
-
-typedef Line *Set;
 
 typedef struct
 {
     char r_policy;
-    Set *sets;
+    __uint8_t *memory;
 } Cache;
 
 Cache *new_cache(Config *config);
+
+__uint8_t *allocate_cache_mem(Config *config);
 
 #endif // CACHE_H

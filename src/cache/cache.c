@@ -1,28 +1,27 @@
 #include "cache.h"
 #include <math.h>
+#include <stdlib.h>
+#include <stdint.h>
 
 Cache *new_cache(Config *config)
 {
-    unsigned int index_length = log2l(config->nsets);
-    unsigned int offset_length = log2l(config->bsize);
-    unsigned int tag_size = ADDRESS_LENGTH - index_length - offset_length;
+    Cache *cache = (Cache *)malloc(sizeof(Cache));
 
-    // Alocate a space in memory for a block
-    Block *block = (Block *)malloc(sizeof(Byte) * config->bsize);
+    cache->memory = allocate_cache_mem(config);
 
-    // Fill all block bytes with zero
-    for (int i = 0; i < config->bsize; i++)
-    {
-        block[i] = 0b00000000;
-    }
+    return cache;
+}
 
-    // Alocate a space in memory for a tag
-    Tag *tag = (Tag *)malloc(sizeof(Byte) * tag_size);
+__uint8_t *allocate_cache_mem(Config *config)
+{
+    __u_int index_length = log2l(config->nsets);
+    __u_int offset_length = log2l(config->bsize);
+    __u_int tag_size = ADDRESS_LENGTH - index_length - offset_length;
 
-    // Fill all tag bytes with zero
-    for (int i = 0; i < tag_size; i++)
-    {
-        tag[i] = 0b00000000;
-    }
-    
+    __u_int lines = config->nsets * config->assoc;
+    __u_int line_bytes = 1 + tag_size + config->bsize;
+
+    __uint8_t *memory = (__uint8_t *)calloc(lines, line_bytes);
+
+    return memory;
 }
