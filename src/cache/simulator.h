@@ -1,7 +1,9 @@
 #ifndef SIMULATOR_H
 #define SIMULATOR_H
 
-void run(char *file_path);
+#include "cache.h"
+
+void run(Cache *cache, char *file_path);
 
 void read_address(char *file_path);
 

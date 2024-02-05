@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void run(char *file_path)
+void run(Cache *cache, char *file_path)
 {
     uint32_t misses = 0;
     uint32_t hits = 0;

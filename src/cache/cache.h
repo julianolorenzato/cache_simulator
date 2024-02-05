@@ -10,11 +10,13 @@
 typedef struct
 {
     char r_policy;
-    __uint8_t *memory;
+    uint8_t *memory;
 } Cache;
 
 Cache *new_cache(Config *config);
 
-__uint8_t *allocate_cache_mem(Config *config);
+uint8_t *allocate_cache_mem(Config *config);
+
+void request_address(Cache *cache, uint32_t address);
 
 #endif // CACHE_H

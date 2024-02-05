@@ -12,16 +12,21 @@ Cache *new_cache(Config *config)
     return cache;
 }
 
-__uint8_t *allocate_cache_mem(Config *config)
+uint8_t *allocate_cache_mem(Config *config)
 {
-    __u_int index_length = log2l(config->nsets);
-    __u_int offset_length = log2l(config->bsize);
-    __u_int tag_size = ADDRESS_LENGTH - index_length - offset_length;
+    uint32_t index_length = log2l(config->nsets);
+    uint32_t offset_length = log2l(config->bsize);
+    uint32_t tag_size = ADDRESS_LENGTH - index_length - offset_length;
 
-    __u_int lines = config->nsets * config->assoc;
-    __u_int line_bytes = 1 + tag_size + config->bsize;
+    uint32_t lines = config->nsets * config->assoc;
+    uint32_t line_bytes = 1 + tag_size + config->bsize;
 
-    __uint8_t *memory = (__uint8_t *)calloc(lines, line_bytes);
+    uint8_t *memory = (uint8_t *)calloc(lines, line_bytes);
 
     return memory;
+}
+
+void request_address(Cache *cache, __uint32_t address)
+{
+    uint8_t start = cache->memory + 
 }
