@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 Config *parse_arguments(int argc, char *argv[])
 {
@@ -129,13 +130,17 @@ bool request_address(Cache *cache, uint32_t address)
     // Iterate all lines in the set (in case of not direct mapping)
     for (int i = 0; i < cache->config.assoc; i++)
     {
-        uint8_t validation_bit = *memory_ptr;
+        uint8_t validation_bit;
+        memcpy(&validation_bit, memory_ptr, 1);
         memory_ptr += 1;
 
-        uint32_t tag = *memory_ptr;
+        uint32_t tag;
+        memcpy(&tag, memory_ptr, bits_to_bytes(cache->address_format.tag_bits));
         memory_ptr += bits_to_bytes(cache->address_format.tag_bits);
 
-        uint32_t block = *memory_ptr;
+        // uint32_t block;
+        // memcpy(&block, memory_ptr, cache->config.bsize);
+        // skip block
         memory_ptr += cache->config.bsize;
 
         if (validation_bit && tag == addr_data.tag_data)
@@ -143,6 +148,8 @@ bool request_address(Cache *cache, uint32_t address)
             return true;
         }
     }
+
+    // Adicionar o endereço à cache aqui
 
     return false;
 }
