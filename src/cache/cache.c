@@ -61,10 +61,13 @@ Cache *new_cache(Config *config)
     uint32_t offset_bits = calculate_bits_needed(config->bsize);
     uint32_t tag_bits = ADDRESS_BITS - index_bits - offset_bits;
 
-    cache->address_format.index_bits = index_bits;
-    cache->address_format.offset_bits = offset_bits;
-    cache->address_format.tag_bits = tag_bits;
+    AddressFormat addr_format = {
+        .index_bits = index_bits,
+        .tag_bits = tag_bits,
+        .offset_bits = offset_bits,
+    };
 
+    cache->address_format = addr_format;
     cache->config = *config;
     cache->memory = allocate_cache_mem(cache);
 
@@ -93,47 +96,58 @@ uint8_t *allocate_cache_mem(Cache *cache)
     return memory;
 }
 
+// Skip x bits from right to left and then take y bits from right to left
 uint32_t extract_bits(uint32_t value, uint32_t skip, uint32_t take)
 {
     uint32_t mask = ((1 << take) - 1) << skip;
     return (mask & value) >> skip;
 }
 
-uint32_t *decode_address(uint32_t address, AddressFormat format)
+// Return the bits of index, tag and offset from the address
+AddressData decode_address(uint32_t address, AddressFormat format)
 {
     uint32_t *data = (uint32_t *)malloc(sizeof(uint32_t) * 3);
+
+    AddressData addr_data = {
+        .index_data = extract_bits(address, format.tag_bits + format.offset_bits, format.index_bits),
+        .tag_data = extract_bits(address, format.offset_bits, format.tag_bits),
+        .offset_data = extract_bits(address, 0, format.offset_bits),
+    };
+
+    return addr_data;
 }
 
+// Evaluate if an address is a hit or miss in the cache memory
 bool request_address(Cache *cache, uint32_t address)
 {
-    uint32_t index_bits = cache->address_format.index_bits;
-    uint32_t tag_bits = cache->address_format.tag_bits;
-    uint32_t offset_bits = cache->address_format.offset_bits;
-
-    uint32_t address_tag = (address << index_bits) >> index_bits + offset_bits;
+    AddressData addr_data = decode_address(address, cache->address_format);
 
     uint32_t cache_index = address % cache->config.nsets;
 
-    uint8_t set_start = cache->memory + cache_index;
+    uint8_t *memory_ptr = cache->memory + cache_index;
 
-    bool validation_bit = set_start;
-    uint32_t tag = set_start + 1;
-    uint32_t block = set_start + 1 + tag_bits;
-
+    // Iterate all lines in the set (in case of not direct mapping)
     for (int i = 0; i < cache->config.assoc; i++)
     {
+        uint8_t validation_bit = *memory_ptr;
+        memory_ptr += 1;
+
+        uint32_t tag = *memory_ptr;
+        memory_ptr += bits_to_bytes(cache->address_format.tag_bits);
+
+        uint32_t block = *memory_ptr;
+        memory_ptr += cache->config.bsize;
+
+        if (validation_bit && tag == addr_data.tag_data)
+        {
+            return true;
+        }
     }
 
-    if (validation_bit && tag == address_tag)
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+    return false;
 }
 
+// Calculate bits needed to representate n values
 int calculate_bits_needed(int stored)
 {
     double bits_needed = 0;

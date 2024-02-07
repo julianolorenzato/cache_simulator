@@ -17,13 +17,6 @@ typedef struct
 
 typedef struct
 {
-    Config config;
-    AddressFormat address_format;
-    uint8_t *memory;
-} Cache;
-
-typedef struct
-{
     uint32_t index_bits;
     uint32_t tag_bits;
     uint32_t offset_bits;
@@ -35,6 +28,13 @@ typedef struct
     uint32_t tag_data;
     uint32_t offset_data;
 } AddressData;
+
+typedef struct
+{
+    Config config;
+    AddressFormat address_format;
+    uint8_t *memory;
+} Cache;
 
 Cache *new_cache(Config *config);
 
