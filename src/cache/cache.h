@@ -34,6 +34,7 @@ typedef struct
     Config config;
     AddressFormat address_format;
     uint8_t *memory;
+    uint32_t empty_blocks;
 } Cache;
 
 Cache *new_cache(Config *config);
