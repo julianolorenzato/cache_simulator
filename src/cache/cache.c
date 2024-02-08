@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 
-Config *parse_arguments(int argc, char *argv[])
+Config *parse_arguments(int argc, const char *argv[])
 {
     if (argc != 7)
     {
@@ -71,6 +71,7 @@ Cache *new_cache(Config *config)
     cache->address_format = addr_format;
     cache->config = *config;
     cache->memory = allocate_cache_mem(cache);
+    cache->empty_blocks = (config->nsets) * (config->assoc);
 
     return cache;
 }
@@ -119,7 +120,7 @@ AddressData decode_address(uint32_t address, AddressFormat format)
 }
 
 // Evaluate if an address is a hit or miss in the cache memory
-bool request_address(Cache *cache, uint32_t address)
+bool request_address(Cache *cache, uint32_t address, uint32_t *compulsory_misses)
 {
     AddressData addr_data = decode_address(address, cache->address_format);
 
@@ -143,7 +144,11 @@ bool request_address(Cache *cache, uint32_t address)
         // skip block
         memory_ptr += cache->config.bsize;
 
-        if (validation_bit && tag == addr_data.tag_data)
+        if(validation_bit == 0)
+        {
+            *compulsory_misses++;
+        }
+        else if (validation_bit && tag == addr_data.tag_data)
         {
             return true;
         }
