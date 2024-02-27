@@ -34,6 +34,7 @@ typedef struct
     Config config;
     AddressFormat address_format;
     uint8_t *memory;
+    uint32_t **recency_info;
     uint32_t empty_blocks;
 } Cache;
 
@@ -41,8 +42,8 @@ Cache *new_cache(Config *config);
 
 uint8_t *allocate_cache_mem(Cache *cache);
 
-bool request_address(Cache *cache, uint32_t address);
+bool request_address(Cache *cache, uint32_t address, uint32_t* compulsory_misses);
 
-Config *parse_arguments(int argc, char *argv[]);
+Config *parse_arguments(int argc, const char *argv[]);
 
 #endif // CACHE_H

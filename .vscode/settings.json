@@ -3,6 +3,17 @@
         "arg_parser.h": "c",
         "config.h": "c",
         "cache.h": "c",
-        "stdbool.h": "c"
+        "stdbool.h": "c",
+        "string.h": "c",
+        "makefile": "c",
+        "io_context": "c",
+        "rope": "c",
+        "future": "c",
+        "istream": "c",
+        "mutex": "c",
+        "ostream": "c",
+        "stop_token": "c",
+        "typeinfo": "c",
+        "*.idl": "c"
     }
 }

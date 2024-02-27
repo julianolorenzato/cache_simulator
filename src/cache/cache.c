@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 Config *parse_arguments(int argc, const char *argv[])
 {
@@ -20,6 +21,7 @@ Config *parse_arguments(int argc, const char *argv[])
     config->assoc = atoi(argv[3]);
     config->r_policy = argv[4][0];
     config->o_flag = atoi(argv[5]);
+    //file_path = argv[6]
 
     if (config->nsets <= 0)
     {
@@ -72,6 +74,21 @@ Cache *new_cache(Config *config)
     cache->config = *config;
     cache->memory = allocate_cache_mem(cache);
     cache->empty_blocks = (config->nsets) * (config->assoc);
+
+    cache->recency_info = NULL;
+
+    if (cache->config.assoc == 1 || cache->config.r_policy == 'R')
+    {  return cache;  }
+
+    cache->recency_info = (uint32_t**)malloc(sizeof(uint32_t) * config->nsets);
+    for(int i = 0; i < config->nsets; i++)
+    {
+        cache->recency_info[i] = (uint32_t*)malloc(sizeof(uint32_t) * config->assoc);
+        for(int j = 0; j< config->assoc; j++)
+        {
+            cache->recency_info[i][j] = 0;
+        }
+    }
 
     return cache;
 }
@@ -127,15 +144,18 @@ bool request_address(Cache *cache, uint32_t address, uint32_t *compulsory_misses
     uint32_t cache_index = address % cache->config.nsets;
 
     uint8_t *memory_ptr = cache->memory + cache_index;
+    uint8_t *current_set = memory_ptr;
 
     // Iterate all lines in the set (in case of not direct mapping)
     for (int i = 0; i < cache->config.assoc; i++)
     {
         uint8_t validation_bit;
+        uint8_t* validation_bit_ptr = memory_ptr;
         memcpy(&validation_bit, memory_ptr, 1);
         memory_ptr += 1;
 
         uint32_t tag;
+        uint8_t* tag_ptr = memory_ptr;
         memcpy(&tag, memory_ptr, bits_to_bytes(cache->address_format.tag_bits));
         memory_ptr += bits_to_bytes(cache->address_format.tag_bits);
 
@@ -144,19 +164,68 @@ bool request_address(Cache *cache, uint32_t address, uint32_t *compulsory_misses
         // skip block
         memory_ptr += cache->config.bsize;
 
-        if(validation_bit == 0)
-        {
-            *compulsory_misses++;
-        }
-        else if (validation_bit && tag == addr_data.tag_data)
+        if (validation_bit == 1 && tag == addr_data.tag_data)
         {
             return true;
         }
+
+        if(validation_bit == 0)
+        {
+            *validation_bit_ptr = 1;
+            *tag_ptr = tag;
+            *compulsory_misses++;
+
+            return false;
+
+        }  else if (tag != addr_data.tag_data)
+        {
+            if (i + 1 < cache->config.assoc) // if there`s more blocks to check
+            {  continue;  }
+            else
+            {
+                insert_adress(cache, &addr_data, current_set);
+                return false;
+            }
+        }
+        
     }
 
-    // Adicionar o endereço à cache aqui
 
     return false;
+}
+
+void insert_adress(Cache *cache, AddressData *addr_data, uint8_t *current_set)
+{
+    char r_policy = cache->config.r_policy;
+    uint32_t line_bytes = 1 + bits_to_bytes(cache->address_format.tag_bits) + cache->config.bsize;
+
+    if (cache->config.assoc == 1)
+    {
+        replace_line(cache, addr_data, current_set);
+        return;
+    }
+
+    switch (r_policy)
+    {
+    case 'R':
+        uint32_t chosen_line = rand() % cache->config.assoc;
+        current_set += chosen_line * line_bytes;
+        replace_line(cache, addr_data, current_set);
+        break;
+
+    case 'L':
+
+
+    case 'F':
+
+    }
+}
+
+// needs to update recency info
+void replace_line(Cache *cache, AddressData *addr_data, uint8_t *line_ptr)
+{
+    line_ptr++; //skipping validation bit
+    memcpy(line_ptr, &addr_data->tag_data, bits_to_bytes(cache->address_format.tag_bits));
 }
 
 // Calculate bits needed to representate n values

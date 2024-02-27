@@ -1,7 +1,7 @@
 #ifndef SIMULATOR_H
 #define SIMULATOR_H
 
-#include "cache.h"
+#include "../cache/cache.h"
 
 void run(Cache *cache, char *file_path);
 
