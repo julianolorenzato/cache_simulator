@@ -41,7 +41,7 @@ Cache *new_cache(Config *config);
 
 uint8_t *allocate_cache_mem(Cache *cache);
 
-bool request_address(Cache *cache, uint32_t address, uint32_t* compulsory_misses);
+bool request_address(Cache *cache, uint32_t address, uint32_t *compulsory_misses, uint32_t *conflict_misses);
 
 Config *parse_arguments(int argc, const char *argv[]);
 

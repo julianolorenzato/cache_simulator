@@ -24,7 +24,7 @@ void run(Cache *cache, char *file_path)
   {
     printf("%x\n", addr_buffer);
     // has to check if validation bit is unset inside function
-    bool is_hit = request_address(cache, addr_buffer, &compulsory_misses);
+    bool is_hit = request_address(cache, addr_buffer, &compulsory_misses, &conflict_misses);
 
     if (is_hit)
     {

@@ -17,8 +17,8 @@ Queue *new_q() {
   return q;
 }
 
-void enqueue(Queue *q, uint32_t address) {
-  Node *node = new_node(address);
+void enqueue(Queue *q, uint32_t line_i) {
+  Node *node = new_node(line_i);
   if (q->start == NULL || q->end == NULL) {
     q->start = node;
     q->end = node;
@@ -45,21 +45,21 @@ uint32_t dequeue(Queue *q) {
     curr = curr->next;
   }
 
-  uint32_t address = curr->value;
+  uint32_t line_i = curr->value;
   free(curr->next);
   curr->next = NULL;
   q->start = curr;
-  return address;
+  return line_i;
 }
 
-void refresh(Queue *q, uint32_t address) {
-  if (q->end->value == address) {
+void refresh(Queue *q, uint32_t line_i) {
+  if (q->end->value == line_i) {
     return;
   }
 
   Node *curr = q->end;
 
-  while (curr->next->value != address) {
+  while (curr->next->value != line_i) {
     curr = curr->next;
   }
   Node *refreshed = curr->next;
@@ -67,19 +67,4 @@ void refresh(Queue *q, uint32_t address) {
 
   refreshed->next = q->end;
   q->end = refreshed;
-}
-
-int main() {
-  Queue *q = new_q();
-
-  enqueue(q, 1245);
-  enqueue(q, 246);
-  enqueue(q, 2665);
-  enqueue(q, 534);
-  dequeue(q);
-  refresh(q, 2665);
-  dequeue(q);
-  dequeue(q);
-
-  printf("%d %d", q->start->value, q->end->value);
 }
