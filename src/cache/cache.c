@@ -117,8 +117,6 @@ uint32_t extract_bits(uint32_t value, uint32_t skip, uint32_t take)
 // Return the bits of index, tag and offset from the address
 AddressData decode_address(uint32_t address, AddressFormat format)
 {
-  uint32_t *data = (uint32_t *)malloc(sizeof(uint32_t) * 3);
-
   AddressData addr_data = {
       .index_data = extract_bits(address, format.tag_bits + format.offset_bits, format.index_bits),
       .tag_data = extract_bits(address, format.offset_bits, format.tag_bits),
@@ -147,7 +145,7 @@ bool request_address(Cache *cache, uint32_t address, uint32_t *compulsory_misses
     memory_ptr += 1;
 
     uint32_t tag;
-    uint32_t *tag_ptr = memory_ptr;
+    uint8_t *tag_ptr = memory_ptr;
     memcpy(&tag, memory_ptr, bits_to_bytes(cache->address_format.tag_bits));
     memory_ptr += bits_to_bytes(cache->address_format.tag_bits);
 
@@ -196,7 +194,7 @@ bool request_address(Cache *cache, uint32_t address, uint32_t *compulsory_misses
         uint8_t *choosen_line_tag_ptr = current_set + (choosen_line * line_bytes) + 1;
 
         // change choosen line tag
-        memcpy(choosen_line_tag_ptr, addr_data.tag_data, bits_to_bytes(cache->address_format.tag_bits));
+        memset(choosen_line_tag_ptr, addr_data.tag_data, bits_to_bytes(cache->address_format.tag_bits));
 
         (*conflict_misses)++;
         return false;
@@ -216,7 +214,7 @@ bool request_address(Cache *cache, uint32_t address, uint32_t *compulsory_misses
         uint8_t *choosen_line_tag_ptr = current_set + (choosen_line * line_bytes) + 1;
 
         // change choosen line tag
-        memcpy(choosen_line_tag_ptr, addr_data.tag_data, bits_to_bytes(cache->address_format.tag_bits));
+        memset(choosen_line_tag_ptr, addr_data.tag_data, bits_to_bytes(cache->address_format.tag_bits));
         return false;
       }
       break;
@@ -233,7 +231,7 @@ bool request_address(Cache *cache, uint32_t address, uint32_t *compulsory_misses
         uint8_t *choosen_line_tag_ptr = current_set + (choosen_line * line_bytes) + 1;
 
         // change choosen line tag
-        memcpy(choosen_line_tag_ptr, addr_data.tag_data, bits_to_bytes(cache->address_format.tag_bits));
+        memset(choosen_line_tag_ptr, addr_data.tag_data, bits_to_bytes(cache->address_format.tag_bits));
         return false;
       }
       break;

@@ -3,7 +3,7 @@
 
 #include "../cache/cache.h"
 
-void run(Cache *cache, char *file_path);
+void run(Cache *cache, int output_flag, char *file_path);
 
 void read_address(char *file_path);
 

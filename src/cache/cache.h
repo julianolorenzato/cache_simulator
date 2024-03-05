@@ -45,4 +45,6 @@ bool request_address(Cache *cache, uint32_t address, uint32_t *compulsory_misses
 
 Config *parse_arguments(int argc, const char *argv[]);
 
+int calculate_bits_needed(int stored);
+
 #endif // CACHE_H

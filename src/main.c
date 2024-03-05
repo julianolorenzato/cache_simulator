@@ -14,7 +14,7 @@ int main(int argc, char const *argv[])
     char file_path[40];
     strcpy(file_path, argv[6]);
 
-    run(cache, file_path);
+    run(cache, cache->config.o_flag, file_path);
 
     return 0;
 }
