@@ -5,43 +5,45 @@
 
 void run(Cache *cache, char *file_path)
 {
-    uint32_t capacity_misses = 0;
-    uint32_t conflict_misses = 0; // figure out what to do with these
-    uint32_t compulsory_misses = 0;
-    uint32_t misses = 0;
-    uint32_t hits = 0;
+  uint32_t capacity_misses = 0;
+  uint32_t conflict_misses = 0; // figure out what to do with these
+  uint32_t compulsory_misses = 0;
+  uint32_t misses = 0;
+  uint32_t hits = 0;
 
-    FILE *fp = fopen(file_path, "rb");
-    if (fp == NULL)
+  FILE *fp = fopen(file_path, "rb");
+  if (fp == NULL)
+  {
+    fprintf(stderr, "Error opening file");
+    exit(EXIT_FAILURE);
+  }
+
+  int addr_buffer;
+
+  while (fread(&addr_buffer, 4, 1, fp) > 0)
+  {
+    printf("%x\n", addr_buffer);
+    // has to check if validation bit is unset inside function
+    bool is_hit = request_address(cache, addr_buffer, &compulsory_misses);
+
+    if (is_hit)
     {
-        fprintf(stderr, "Error opening file");
-        exit(EXIT_FAILURE);
+      hits++;
     }
-
-    int addr_buffer;
-
-    while (fread(&addr_buffer, 4, 1, fp) > 0)
+    else
     {
-        printf("%x\n", addr_buffer);
-        if (request_address(cache, addr_buffer, &compulsory_misses)) // has to check if validation bit is unset inside function
-        {
-            hits++;
+      misses++;
 
-        }  else
-        {
-            misses++;
-
-            if(cache->empty_blocks == 0)
-            {
-                capacity_misses++;
-
-            }  else
-            {
-                cache->empty_blocks--;
-            }
-            
-        }
+      if (cache->empty_blocks == 0)
+      {
+        capacity_misses++;
+      }
+      else
+      {
+        cache->empty_blocks--;
+      }
     }
+  }
 
-    fclose(fp);
+  fclose(fp);
 }

@@ -1,16 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-typedef struct node {
-  struct node *next;
-  uint32_t value;
-} Node;
-
-typedef struct {
-  Node *start;
-  Node *end;
-} Queue;
+#include "queue.h"
 
 Node *new_node(uint32_t value) {
   Node *node = (Node *)malloc(sizeof(Node));
