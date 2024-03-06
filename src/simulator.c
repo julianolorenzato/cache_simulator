@@ -13,7 +13,7 @@ void run(Cache *cache, int output_flag, char *file_path)
   uint32_t misses = 0;
   uint32_t hits = 0;
 
-  FILE *fp = fopen("bin_100.bin", "rb");
+  FILE *fp = fopen("src/bin_100.bin", "rb");
   if (fp == NULL)
   {
     fprintf(stderr, "Error opening file");
@@ -22,7 +22,7 @@ void run(Cache *cache, int output_flag, char *file_path)
 
   uint32_t addr_buffer;
   int i = 0;
-  while (fread(&addr_buffer, 4, 1000, fp) > 0)
+  while (fread(&addr_buffer, 4, 1, fp) < 0)
   {
     n_access++;
     i++;
