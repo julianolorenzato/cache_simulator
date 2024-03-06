@@ -15,18 +15,14 @@ int main(int argc, char const *argv[])
 
     for(int i = 0; i < 7; i++) {
     fake_args_ptr[i] = fakeArgs[i];
-    printf("%s ", fakeArgs[i]);
     }
 
     argc = 7; //
     Config *config = parse_arguments(argc, fake_args_ptr);
     Cache *cache = new_cache(config);
     
-
-    char file_path[40] = {"bin_100.bin"};
-    //strcpy(file_path, fake_args_ptr[6]);
-
-    run(cache, cache->config.o_flag, file_path);
+    char file_path[] = {"bin_100.bin"}; //useless
+    run(cache, cache->config.o_flag, &file_path[0]);
 
     return 0;
 }

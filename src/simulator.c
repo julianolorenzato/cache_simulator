@@ -13,7 +13,7 @@ void run(Cache *cache, int output_flag, char *file_path)
   uint32_t misses = 0;
   uint32_t hits = 0;
 
-  FILE *fp = fopen(file_path, "rb");
+  FILE *fp = fopen("bin_100.bin", "rb");
   if (fp == NULL)
   {
     fprintf(stderr, "Error opening file");
