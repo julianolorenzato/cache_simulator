@@ -15,6 +15,16 @@
         "stop_token": "c",
         "typeinfo": "c",
         "*.idl": "c",
-        "simulator.h": "c"
+        "simulator.h": "c",
+        "array": "c",
+        "chrono": "c",
+        "compare": "c",
+        "executor": "c",
+        "internet": "c",
+        "functional": "c",
+        "ratio": "c",
+        "tuple": "c",
+        "type_traits": "c",
+        "utility": "c"
     }
 }

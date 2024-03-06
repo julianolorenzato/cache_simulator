@@ -127,8 +127,6 @@ AddressData decode_address(uint32_t address, AddressFormat format)
       .offset_data = extract_bits(address, 0, format.offset_bits),
   };
 
-  printf("index:%d offset:%d tag:%x\n", addr_data.index_data, addr_data.offset_data, addr_data.tag_data);
-
   return addr_data;
 }
 
@@ -139,27 +137,8 @@ bool request_address(Cache *cache, uint32_t address, uint32_t *compulsory_misses
 
   uint32_t cache_index = address % cache->config.nsets;
 
-  printf("cache_index: %d\n", cache_index);
-
   uint8_t *memory_ptr = cache->memory + (cache_index * (1 + bits_to_bytes(cache->address_format.tag_bits) + cache->config.bsize) * cache->config.assoc);
   uint8_t *current_set = memory_ptr;
-
-  printf("%p %p \n", cache->memory, memory_ptr);
-
-  printf("set1: \n");
-  for (size_t i = 0; i < 8; i++)
-  {
-    printf("%d ", *(cache->memory + i * 6));
-  }
-  printf("\n");
-
-
-  printf("set2: \n");
-  for (size_t i = 8; i < 16; i++)
-  {
-    printf("%d ", *(cache->memory + i * 6));
-  }
-  printf("\n");
 
   // Iterate all lines in the set (in case of not direct mapping)
   for (int i = 0; i < cache->config.assoc; i++)
@@ -174,8 +153,6 @@ bool request_address(Cache *cache, uint32_t address, uint32_t *compulsory_misses
     memcpy(&tag, memory_ptr, bits_to_bytes(cache->address_format.tag_bits));
     memory_ptr += bits_to_bytes(cache->address_format.tag_bits);
 
-    printf("tag %x\n", tag);
-
     // Skip block
     memory_ptr += cache->config.bsize;
 
@@ -183,10 +160,8 @@ bool request_address(Cache *cache, uint32_t address, uint32_t *compulsory_misses
     // Hit
     if (validation_bit == 1 && tag == addr_data.tag_data)
     {
-      printf("deu hit\n");
       if (cache->config.r_policy == 'L') // If LRU, refresh the use of this tag
       {
-        printf("refresh\n");
         refresh(queues[cache_index], i);
       }
 
@@ -196,7 +171,6 @@ bool request_address(Cache *cache, uint32_t address, uint32_t *compulsory_misses
     // Compulsory miss
     if (validation_bit == 0)
     {
-      printf("miss compulsorio\n");
       memset(validation_bit_ptr, 1, 1);
       memcpy(tag_ptr, &addr_data.tag_data, bits_to_bytes(cache->address_format.tag_bits)); // change tag to new address tag
 
@@ -217,7 +191,6 @@ bool request_address(Cache *cache, uint32_t address, uint32_t *compulsory_misses
       // Conflict miss
       if (tag != addr_data.tag_data && i + 1 == cache->config.assoc) // different tag and last line
       {
-        printf("miss de conflito\n");
         uint32_t line_bytes = 1 + bits_to_bytes(cache->address_format.tag_bits) + cache->config.bsize;
         uint32_t choosen_line = rand() % cache->config.assoc;
         // ptr to tag of choosen line
@@ -226,16 +199,10 @@ bool request_address(Cache *cache, uint32_t address, uint32_t *compulsory_misses
         // change choosen line tag
         memcpy(choosen_line_tag_ptr, &addr_data.tag_data, bits_to_bytes(cache->address_format.tag_bits));
 
-        printf("tag random %x\n", addr_data.tag_data);
-        printf("choosen_line %d\n", choosen_line);
-
-        // for (int j = 0; j < bits_to_bytes(cache->address_format.tag_bits) + 1 + cache->config.bsize; j++)
-        // {
-        //   printf("%x ", *(choosen_line_tag_ptr - 1 + j));
-        // }
-        // printf("\n");
-
-        (*conflict_misses)++;
+        if (cache->empty_blocks != 0)
+        {
+          (*conflict_misses)++;
+        }
         return false;
       }
 
@@ -244,16 +211,20 @@ bool request_address(Cache *cache, uint32_t address, uint32_t *compulsory_misses
       // Conflict miss
       if (tag != addr_data.tag_data && i + 1 == cache->config.assoc) // different tag and last line
       {
-        printf("miss de conflito\n");
         uint32_t line_bytes = 1 + bits_to_bytes(cache->address_format.tag_bits) + cache->config.bsize;
         uint32_t choosen_line = dequeue(queues[cache_index]);
         enqueue(queues[cache_index], choosen_line);
-
         // ptr to tag of choosen line
         uint8_t *choosen_line_tag_ptr = current_set + (choosen_line * line_bytes) + 1;
 
         // change choosen line tag
         memcpy(choosen_line_tag_ptr, &addr_data.tag_data, bits_to_bytes(cache->address_format.tag_bits));
+
+        if (cache->empty_blocks != 0)
+        {
+          (*conflict_misses)++;
+        }
+
         return false;
       }
       break;
@@ -261,8 +232,6 @@ bool request_address(Cache *cache, uint32_t address, uint32_t *compulsory_misses
       // Conflict miss
       if (tag != addr_data.tag_data && i + 1 == cache->config.assoc) // different tag and last line
       {
-        printf("i: %d\n", i);
-        printf("miss de conflito\n");
         uint32_t line_bytes = 1 + bits_to_bytes(cache->address_format.tag_bits) + cache->config.bsize;
         uint32_t choosen_line = dequeue(queues[cache_index]);
         enqueue(queues[cache_index], choosen_line);
@@ -272,6 +241,12 @@ bool request_address(Cache *cache, uint32_t address, uint32_t *compulsory_misses
 
         // change choosen line tag
         memcpy(choosen_line_tag_ptr, &addr_data.tag_data, bits_to_bytes(cache->address_format.tag_bits));
+
+        if (cache->empty_blocks != 0)
+        {
+          (*conflict_misses)++;
+        }
+
         return false;
       }
       break;

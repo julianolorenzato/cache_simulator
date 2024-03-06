@@ -29,6 +29,12 @@ void enqueue(Queue *q, uint32_t line_i)
   }
   else
   {
+    Node *curr = q->end;
+    while (curr != NULL)
+    {
+      curr = curr->next;
+    }
+
     node->next = q->end;
     q->end = node;
   }
@@ -55,7 +61,7 @@ uint32_t dequeue(Queue *q)
     curr = curr->next;
   }
 
-  uint32_t line_i = curr->value;
+  uint32_t line_i = curr->next->value;
   free(curr->next);
   curr->next = NULL;
   q->start = curr;
@@ -73,14 +79,11 @@ void refresh(Queue *q, uint32_t line_i)
 
   while (curr->next->value != line_i)
   {
-    printf("%p\n", curr->next);
-    printf("val %d\n", curr->next->value);
     curr = curr->next;
   }
 
   Node *l_i = curr->next;
 
-  Node *refreshed = curr;
   curr->next = curr->next->next;
 
   l_i->next = q->end;
