@@ -3,37 +3,46 @@
 #include <stdlib.h>
 #include "queue.h"
 
-Node *new_node(uint32_t value) {
+Node *new_node(uint32_t value)
+{
   Node *node = (Node *)malloc(sizeof(Node));
   node->value = value;
   node->next = NULL;
   return node;
 }
 
-Queue *new_q() {
+Queue *new_q()
+{
   Queue *q = (Queue *)malloc(sizeof(Queue));
   q->start = NULL;
   q->end = NULL;
   return q;
 }
 
-void enqueue(Queue *q, uint32_t line_i) {
+void enqueue(Queue *q, uint32_t line_i)
+{
   Node *node = new_node(line_i);
-  if (q->start == NULL || q->end == NULL) {
+  if (q->start == NULL || q->end == NULL)
+  {
     q->start = node;
     q->end = node;
-  } else {
+  }
+  else
+  {
     node->next = q->end;
     q->end = node;
   }
 }
 
-uint32_t dequeue(Queue *q) {
-  if (q->end == NULL) {
+uint32_t dequeue(Queue *q)
+{
+  if (q->end == NULL)
+  {
     return -1;
   }
 
-  if (q->end->next == NULL) {
+  if (q->end->next == NULL)
+  {
     free(q->end);
     q->end = NULL;
     q->start = NULL;
@@ -41,7 +50,8 @@ uint32_t dequeue(Queue *q) {
 
   Node *curr = q->end;
 
-  while (curr->next != q->start) {
+  while (curr->next != q->start)
+  {
     curr = curr->next;
   }
 
@@ -52,19 +62,27 @@ uint32_t dequeue(Queue *q) {
   return line_i;
 }
 
-void refresh(Queue *q, uint32_t line_i) {
-  if (q->end->value == line_i) {
+void refresh(Queue *q, uint32_t line_i)
+{
+  if (q->end->value == line_i)
+  {
     return;
   }
 
   Node *curr = q->end;
 
-  while (curr->next->value != line_i) {
+  while (curr->next->value != line_i)
+  {
+    printf("%p\n", curr->next);
+    printf("val %d\n", curr->next->value);
     curr = curr->next;
   }
-  Node *refreshed = curr->next;
+
+  Node *l_i = curr->next;
+
+  Node *refreshed = curr;
   curr->next = curr->next->next;
 
-  refreshed->next = q->end;
-  q->end = refreshed;
+  l_i->next = q->end;
+  q->end = l_i;
 }

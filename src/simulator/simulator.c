@@ -25,10 +25,11 @@ void run(Cache *cache, int output_flag, char *file_path)
   while (fread(&addr_buffer, 4, 1, fp) > 0)
   {
     n_access++;
-    printf("%x\n", ntohl(addr_buffer));
+    printf("%d\n", ntohl(addr_buffer));
     // has to check if validation bit is unset inside function
     bool is_hit = request_address(cache, ntohl(addr_buffer), &compulsory_misses, &conflict_misses);
 
+  printf("\n");
     if (is_hit)
     {
       hits++;
