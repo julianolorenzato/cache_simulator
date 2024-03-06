@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <arpa/inet.h>
+//#include <arpa/inet.h>
 
 void run(Cache *cache, int output_flag, char *file_path)
 {
@@ -21,14 +21,17 @@ void run(Cache *cache, int output_flag, char *file_path)
   }
 
   uint32_t addr_buffer;
-
-  while (fread(&addr_buffer, 4, 1, fp) > 0)
+  int i = 0;
+  while (fread(&addr_buffer, 4, 1000, fp) > 0)
   {
     n_access++;
-    printf("%x\n", ntohl(addr_buffer));
+    i++;
+    printf("address buffer: %d\n\n", addr_buffer);
+    continue;
+    //printf("%x\n", ntohl(addr_buffer));
     // has to check if validation bit is unset inside function
-    bool is_hit = request_address(cache, ntohl(addr_buffer), &compulsory_misses, &conflict_misses);
-
+    bool is_hit = true; //bool is_hit = request_address(cache, ntohl(addr_buffer), &compulsory_misses, &conflict_misses);
+    
     if (is_hit)
     {
       hits++;
