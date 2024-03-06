@@ -38,7 +38,7 @@ Config *parse_arguments(int argc, const char *argv[])
     exit(EXIT_FAILURE);
   }
 
-  if (config->assoc < 0 || config->assoc > config->nsets)
+  if (config->assoc < 0)
   {
     fprintf(stderr, "Invalid associativity.\n");
     exit(EXIT_FAILURE);
@@ -66,6 +66,10 @@ Cache *new_cache(Config *config)
   uint32_t index_bits = calculate_bits_needed(config->nsets);
   uint32_t offset_bits = calculate_bits_needed(config->bsize);
   uint32_t tag_bits = ADDRESS_BITS - index_bits - offset_bits;
+
+  printf("index bits %d\n", index_bits);
+  printf("offset bits %d\n", offset_bits);
+  printf("tag bits %d\n", tag_bits);
 
   AddressFormat addr_format = {
       .index_bits = index_bits,
@@ -118,10 +122,14 @@ uint32_t extract_bits(uint32_t value, uint32_t skip, uint32_t take)
 AddressData decode_address(uint32_t address, AddressFormat format)
 {
   AddressData addr_data = {
-      .index_data = extract_bits(address, format.tag_bits + format.offset_bits, format.index_bits),
-      .tag_data = extract_bits(address, format.offset_bits, format.tag_bits),
+      .tag_data = extract_bits(address, format.offset_bits + format.index_bits, format.tag_bits),
+      .index_data = extract_bits(address, format.offset_bits, format.index_bits),
       .offset_data = extract_bits(address, 0, format.offset_bits),
   };
+
+  // addr_data.tag_data =
+  // printf("antiga %d nova %d\n", addr_data.tag_data, (TAG_MASK & address) >> 10);
+  // printf("index:%d offset:%d tag:%d\n", addr_data.index_data, addr_data.offset_data, addr_data.tag_data);
 
   return addr_data;
 }
@@ -133,12 +141,15 @@ bool request_address(Cache *cache, uint32_t address, uint32_t *compulsory_misses
 
   uint32_t cache_index = address % cache->config.nsets;
 
-  uint8_t *memory_ptr = cache->memory + cache_index;
+  printf("cache_index: %d\n", cache_index);
+
+  uint8_t *memory_ptr = cache->memory + (cache_index * (1 + bits_to_bytes(cache->address_format.tag_bits) + cache->config.bsize));
   uint8_t *current_set = memory_ptr;
 
   // Iterate all lines in the set (in case of not direct mapping)
   for (int i = 0; i < cache->config.assoc; i++)
   {
+    printf("assoc: %d\n", cache->config.assoc);
     uint8_t validation_bit;
     uint8_t *validation_bit_ptr = memory_ptr;
     memcpy(&validation_bit, memory_ptr, 1);
@@ -172,6 +183,8 @@ bool request_address(Cache *cache, uint32_t address, uint32_t *compulsory_misses
       memset(validation_bit_ptr, 1, 1);                                     // change validation bit to 1
       memcpy(tag_ptr, &tag, bits_to_bytes(cache->address_format.tag_bits)); // change tag to new address tag
 
+      cache->empty_blocks--;
+
       if (cache->config.r_policy == 'F' || cache->config.r_policy == 'L')
       {
         enqueue(queues[cache_index], i);
@@ -195,6 +208,12 @@ bool request_address(Cache *cache, uint32_t address, uint32_t *compulsory_misses
 
         // change choosen line tag
         memset(choosen_line_tag_ptr, addr_data.tag_data, bits_to_bytes(cache->address_format.tag_bits));
+
+        for (int j = 0; j < bits_to_bytes(cache->address_format.tag_bits) + 1 + cache->config.bsize; j++)
+        {
+          printf("%x ", *(choosen_line_tag_ptr - 1 + j));
+        }
+        printf("\n");
 
         (*conflict_misses)++;
         return false;

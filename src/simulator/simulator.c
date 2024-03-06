@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <arpa/inet.h>
+#include <netinet/in.h>
 
 void run(Cache *cache, int output_flag, char *file_path)
 {
@@ -41,10 +41,6 @@ void run(Cache *cache, int output_flag, char *file_path)
       {
         capacity_misses++;
       }
-      else
-      {
-        cache->empty_blocks--;
-      }
     }
   }
 
@@ -55,10 +51,10 @@ void run(Cache *cache, int output_flag, char *file_path)
     printf("%d, %.4f, %.4f, %.2f, %.2f, %.2f",
            n_access,
            (float)hits / (float)n_access,
-           (float)(capacity_misses + conflict_misses + compulsory_misses) / (float)n_access,
-           (float)compulsory_misses / (float)n_access,
-           (float)capacity_misses / (float)n_access,
-           (float)conflict_misses / (float)n_access);
+           (float)misses / (float)n_access,
+           (float)compulsory_misses / (float)misses,
+           (float)capacity_misses / (float)misses,
+           (float)conflict_misses / (float)misses);
   }
   else
   {
